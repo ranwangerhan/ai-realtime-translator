@@ -63,26 +63,36 @@ python main.py --list-devices
 ## 📋 数据流水线
 
 ```
-麦克风 → AudioCapture → VAD 切分 → Whisper ASR → LLM 翻译
-                                                       ↓
-Web 前端 ← WebSocket ← 修正引擎 ← 智能拼接 ← 翻译结果
-                             ↓ (发现错误)
-                       修正事件 → 前端字幕更新
+麦克风 → AudioCapture → VAD 切分 → Whisper ASR
+                                               ↓
+                                       智能句子拼接
+                                               ↓
+                                        LLM 翻译
+                                               ↓
+                                       修正引擎审查
+                                      ↙         ↘
+                               翻译正确        发现错误
+                                  ↓              ↓
+                             推送前端        修正事件推送
+                                  ↓              ↓
+                             前端字幕        前端追加修正行
 ```
 
 ## ⚙️ 配置说明
 
+> 以下为代码层面的默认值。可通过 `.env` 文件覆盖。
+
 | 配置项 | 默认值 | 说明 |
 |--------|--------|------|
-| `ASR_MODEL_SIZE` | `tiny` | Whisper 模型大小：`tiny`/`base`/`small`/`medium`/`large` |
-| `ASR_DEVICE` | `cuda` | 推理设备：`cuda` / `cpu` |
-| `ASR_COMPUTE_TYPE` | `float16` | 精度：`float16` / `int8` / `float32` |
+| `ASR_MODEL_SIZE` | `base` | Whisper 模型大小：`tiny`/`base`/`small`/`medium`/`large` |
+| `ASR_DEVICE` | `cpu` | 推理设备：`cuda` / `cpu` |
+| `ASR_COMPUTE_TYPE` | `int8` | 精度：`float16` / `int8` / `float32` |
 | `VAD_MODE` | `1` | VAD 激进程度：0(宽松) ~ 3(激进) |
-| `SILENCE_DURATION_MS` | `600` | 语音结束静音判定 (ms) |
+| `SILENCE_DURATION_MS` | `800` | 语音结束静音判定 (ms) |
 | `ENABLE_CORRECTION` | `true` | 是否启用滑动窗口修正 |
-| `CORRECTION_WINDOW_SIZE` | `8` | 修正窗口大小 |
+| `CORRECTION_WINDOW_SIZE` | `5` | 修正窗口大小 |
 | `LLM_PROVIDER` | `openai` | 翻译提供商：`openai` / `anthropic` |
-| `LLM_MODEL` | `deepseek-chat` | 翻译模型 |
+| `LLM_MODEL` | `gpt-4o-mini` | 翻译模型（需与 API 提供商匹配） |
 | `WS_PORT` | `8765` | WebSocket 服务端口 |
 
 ## 🏗️ 项目结构
