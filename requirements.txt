@@ -1,0 +1,22 @@
+# ─── 核心框架 ───
+fastapi>=0.111.0
+uvicorn[standard]>=0.29.0
+pydantic>=2.7.0
+pydantic-settings>=2.2.0
+
+# ─── 音频采集 ───
+pyaudio>=0.2.14
+
+# ─── VAD ───
+webrtcvad>=2.0.10
+
+# ─── ASR ───
+faster-whisper>=1.0.0
+
+# ─── LLM API ───
+openai>=1.30.0
+httpx>=0.27.0
+
+# ─── 工具 ───
+loguru>=0.7.2
+numpy>=1.26.0

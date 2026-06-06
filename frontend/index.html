@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 同声传译助手</title>
+<style>
+  :root {
+    --bg: #0b0b12;
+    --surface: #12121c;
+    --surface2: #1a1a2e;
+    --card: #1e1e32;
+    --accent: #7c5cfc;
+    --accent-dim: rgba(124, 92, 252, 0.15);
+    --text: #e4e4f0;
+    --text-dim: #9898b8;
+    --text-muted: #58587a;
+    --green: #34d399;
+    --yellow: #fbbf24;
+    --red: #f87171;
+    --radius: 10px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ──── Header ──── */
+  header {
+    padding: 14px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--surface);
+  }
+  header .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  header .brand-icon {
+    width: 32px; height: 32px;
+    background: var(--accent-dim);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+  }
+  header h1 {
+    font-size: 15px;
+    font-weight: 600;
+    background: linear-gradient(135deg, var(--accent), #a78bfa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .status-bar {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+  .status-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--red);
+    transition: all 0.3s;
+  }
+  .status-dot.connected {
+    background: var(--green);
+    box-shadow: 0 0 10px rgba(52, 211, 153, 0.5);
+  }
+  .stats {
+    display: flex;
+    gap: 12px;
+    color: var(--text-muted);
+  }
+  .stats span { display: flex; align-items: center; gap: 3px; }
+  .stats strong { color: var(--text-dim); font-weight: 500; }
+
+  /* ──── Main ──── */
+  main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    max-width: 780px;
+    margin: 0 auto;
+    width: 100%;
+    padding: 0 16px 16px;
+  }
+
+  /* ──── Subtitle Area ──── */
+  .subtitle-area {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px 0;
+    scroll-behavior: smooth;
+  }
+  .subtitle-area::-webkit-scrollbar { width: 4px; }
+  .subtitle-area::-webkit-scrollbar-track { background: transparent; }
+  .subtitle-area::-webkit-scrollbar-thumb { background: var(--surface2); border-radius: 2px; }
+
+  /* ──── Entry Card ──── */
+  .entry {
+    padding: 14px 18px;
+    margin-bottom: 8px;
+    background: var(--card);
+    border-radius: var(--radius);
+    border: 1px solid rgba(255,255,255,0.04);
+    border-left: 3px solid rgba(124, 92, 252, 0.5);
+    position: relative;
+  }
+  .entry:last-child {
+    margin-bottom: 0;
+  }
+  .entry.corrected {
+    border-left-color: var(--yellow);
+    border-color: rgba(251, 191, 36, 0.15);
+  }
+
+  .entry .source {
+    font-size: 12.5px;
+    color: var(--text-muted);
+    margin-bottom: 5px;
+    line-height: 1.5;
+    letter-spacing: 0.01em;
+  }
+  .entry .translation {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--text);
+    line-height: 1.6;
+  }
+  .entry .meta {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+    font-size: 10.5px;
+    color: var(--text-muted);
+    align-items: center;
+  }
+
+  /* ──── Correction Tags ──── */
+  .correction-error {
+    display: inline-block;
+    background: rgba(248, 113, 113, 0.15);
+    color: var(--red);
+    font-size: 10px;
+    padding: 1px 7px;
+    border-radius: 4px;
+    font-weight: 500;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+  .correction-badge {
+    display: inline-block;
+    background: rgba(251, 191, 36, 0.15);
+    color: var(--yellow);
+    font-size: 10px;
+    padding: 1px 7px;
+    border-radius: 4px;
+    font-weight: 500;
+  }
+  .correction-new {
+    margin-top: 8px;
+    padding: 8px 10px;
+    background: rgba(52, 211, 153, 0.06);
+    border-radius: 6px;
+    border: 1px solid rgba(52, 211, 153, 0.12);
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--green);
+    line-height: 1.5;
+  }
+  .correction-new::before {
+    content: '✎ ';
+    font-size: 12px;
+    color: var(--text-muted);
+    font-weight: 400;
+  }
+
+  /* ──── Empty State ──── */
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    min-height: 200px;
+    text-align: center;
+    color: var(--text-muted);
+  }
+  .empty-state .icon {
+    font-size: 40px;
+    margin-bottom: 14px;
+    opacity: 0.4;
+  }
+  .empty-state h2 {
+    font-size: 16px;
+    font-weight: 500;
+    margin-bottom: 6px;
+    color: var(--text-dim);
+  }
+  .empty-state p {
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+
+  /* ──── Animations ──── */
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .entry { animation: slideIn 0.25s ease forwards; }
+  @keyframes correctGlow {
+    0% { border-left-color: var(--yellow); }
+    50% { box-shadow: inset 0 0 20px rgba(251, 191, 36, 0.04); }
+    100% { border-left-color: var(--yellow); }
+  }
+  .entry.corrected { animation: correctGlow 0.6s ease; }
+
+  /* ──── Correction Status Badge in Header ──── */
+  #correctionStatus {
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: rgba(255,255,255,0.04);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="brand-icon">🎙</div>
+    <h1>AI 同声传译</h1>
+  </div>
+  <div class="status-bar">
+    <span class="status-dot" id="statusDot"></span>
+    <span id="statusText">未连接</span>
+    <span class="stats">
+      <span>句 <strong id="sentCount">0</strong></span>
+      <span>修 <strong id="corrCount">0</strong></span>
+      <span id="correctionStatus"></span>
+    </span>
+  </div>
+</header>
+
+<main>
+  <div class="subtitle-area" id="subtitleArea">
+    <div class="empty-state" id="emptyState">
+      <div class="icon">🎧</div>
+      <h2>等待音频输入</h2>
+      <p>连接后将实时显示 AI 同声传译结果</p>
+    </div>
+  </div>
+</main>
+
+<script>
+  // ──── DOM ──────────────────────────────────────────
+  const subtitleArea = document.getElementById('subtitleArea');
+  const emptyState = document.getElementById('emptyState');
+  const statusDot = document.getElementById('statusDot');
+  const statusText = document.getElementById('statusText');
+  const sentCount = document.getElementById('sentCount');
+  const corrCount = document.getElementById('corrCount');
+  const correctionStatusEl = document.getElementById('correctionStatus');
+
+  let sentTotal = 0;
+  let corrTotal = 0;
+  const entryMap = new Map();
+
+  // ──── WebSocket ────────────────────────────────────
+  const wsUrl = (location.protocol === 'https:' ? 'wss:' : 'ws:') + '//' + location.hostname + ':8765/ws';
+
+  function connect() {
+    const ws = new WebSocket(wsUrl);
+
+    ws.onopen = () => {
+      statusDot.classList.add('connected');
+      statusText.textContent = '已连接';
+    };
+
+    ws.onclose = () => {
+      statusDot.classList.remove('connected');
+      statusText.textContent = '已断开';
+      setTimeout(connect, 3000);
+    };
+
+    ws.onerror = () => {
+      statusDot.classList.remove('connected');
+      statusText.textContent = '连接失败';
+      setTimeout(connect, 5000);
+    };
+
+    ws.onmessage = (event) => {
+      try { handleMessage(JSON.parse(event.data)); }
+      catch (e) { console.error('parse error:', e); }
+    };
+
+    setInterval(() => {
+      if (ws.readyState === WebSocket.OPEN)
+        ws.send(JSON.stringify({ type: 'ping' }));
+    }, 30000);
+  }
+
+  // ──── 消息处理 ──────────────────────────────────────
+
+  function handleMessage(msg) {
+    switch (msg.type) {
+      case 'asr_interim': showASR(msg.data); break;
+      case 'translation': addTranslation(msg.data); break;
+      case 'correction': applyCorrection(msg.data); break;
+      case 'correction_status': showCorrectionStatus(msg.data); break;
+    }
+  }
+
+  function esc(t) { if (!t) return ''; var d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
+
+  // ──── ASR ──────────────────────────────────────────
+
+  function showASR(data) {
+    emptyState.style.display = 'none';
+    var el = entryMap.get(data.seq_id);
+    if (el) {
+      el.querySelector('.source').textContent = data.text;
+      if (el.dataset.status === 'asr_only')
+        el.querySelector('.translation').textContent = data.text;
+      return;
+    }
+    var div = document.createElement('div');
+    div.className = 'entry';
+    div.dataset.seqId = data.seq_id;
+    div.dataset.status = 'asr_only';
+    div.innerHTML = '<div class="source">' + esc(data.text) + '</div><div class="translation" style="color:var(--text-dim)">' + esc(data.text) + '</div><div class="meta"><span>#' + String(data.seq_id).padStart(4,'0') + '</span><span>识别中</span></div>';
+    subtitleArea.appendChild(div);
+    entryMap.set(data.seq_id, div);
+    sentTotal++;
+    sentCount.textContent = sentTotal;
+  }
+
+  // ──── 翻译 ──────────────────────────────────────────
+
+  function addTranslation(data) {
+    emptyState.style.display = 'none';
+    var el = entryMap.get(data.seq_id);
+    if (el) {
+      el.dataset.status = el.dataset.status === 'corrected' ? 'corrected' : 'translated';
+      var src = el.querySelector('.source');
+      if (src && data.source_text) src.textContent = data.source_text;
+      var tr = el.querySelector('.translation');
+      if (tr) {
+        var eb = tr.querySelector('.correction-error');
+        tr.textContent = data.translated_text;
+        if (eb) tr.appendChild(eb);
+      }
+      var meta = el.querySelector('.meta');
+      if (meta && !meta.querySelector('.correction-badge'))
+        meta.innerHTML = '<span>#' + String(data.seq_id).padStart(4,'0') + '</span><span>' + data.status + '</span>';
+      return;
+    }
+    var div = document.createElement('div');
+    div.className = 'entry';
+    div.dataset.seqId = data.seq_id;
+    div.dataset.status = 'translated';
+    div.innerHTML = '<div class="source">' + esc(data.source_text) + '</div><div class="translation">' + esc(data.translated_text) + '</div><div class="meta"><span>#' + String(data.seq_id).padStart(4,'0') + '</span><span>' + data.status + '</span></div>';
+    subtitleArea.appendChild(div);
+    entryMap.set(data.seq_id, div);
+    sentTotal++;
+    sentCount.textContent = sentTotal;
+  }
+
+  // ──── 修正 ──────────────────────────────────────────
+
+  function applyCorrection(data) {
+    var el = entryMap.get(data.seq_id);
+    if (!el) {
+      var div = document.createElement('div');
+      div.className = 'entry corrected';
+      div.dataset.seqId = data.seq_id;
+      div.dataset.status = 'corrected';
+      div.innerHTML = '<div class="source">' + esc(data.original_source || '') + '</div><div class="translation">' + esc(data.original_translation) + ' <span class="correction-error">需修正</span></div><div class="correction-new">' + esc(data.corrected_translation) + '</div><div class="meta"><span>#' + String(data.seq_id).padStart(4,'0') + '</span><span class="correction-badge">修正</span></div>';
+      subtitleArea.appendChild(div);
+      entryMap.set(data.seq_id, div);
+      sentTotal++;
+      sentCount.textContent = sentTotal;
+    } else {
+      if (el.querySelector('.correction-new')) return;
+      el.classList.add('corrected');
+      el.dataset.status = 'corrected';
+      var src = el.querySelector('.source');
+      if (src && !src.textContent.trim() && data.original_source) src.textContent = data.original_source;
+      var tr = el.querySelector('.translation');
+      if (tr && !tr.querySelector('.correction-error')) {
+        var b = document.createElement('span');
+        b.className = 'correction-error';
+        b.textContent = '需修正';
+        tr.appendChild(b);
+      }
+      if (!el.querySelector('.correction-new')) {
+        var n = document.createElement('div');
+        n.className = 'correction-new';
+        n.textContent = data.corrected_translation || '';
+        el.appendChild(n);
+      }
+      var meta = el.querySelector('.meta');
+      if (meta && !meta.querySelector('.correction-badge')) {
+        var b = document.createElement('span');
+        b.className = 'correction-badge';
+        b.textContent = '修正';
+        meta.prepend(b);
+      }
+    }
+    corrTotal++;
+    corrCount.textContent = corrTotal;
+  }
+
+  // ──── 修正状态 ──────────────────────────────────────
+
+  function showCorrectionStatus(data) {
+    correctionStatusEl.style.display = '';
+    if (data.status === 'checking') {
+      correctionStatusEl.textContent = '⏳ 审查';
+      correctionStatusEl.style.color = 'var(--yellow)';
+    } else if (data.status === 'corrected') {
+      correctionStatusEl.textContent = '🔧 已修正';
+      correctionStatusEl.style.color = 'var(--green)';
+      setTimeout(function(){ correctionStatusEl.style.display = 'none'; }, 3000);
+    } else {
+      correctionStatusEl.textContent = '';
+      correctionStatusEl.style.display = 'none';
+    }
+  }
+
+  // ──── 启动 ──────────────────────────────────────
+  connect();
+</script>
+
+</body>
+</html>
