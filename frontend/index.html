@@ -29,8 +29,6 @@
     display: flex;
     flex-direction: column;
   }
-
-  /* ──── Header ──── */
   header {
     padding: 14px 20px;
     border-bottom: 1px solid rgba(255,255,255,0.04);
@@ -39,200 +37,58 @@
     justify-content: space-between;
     background: var(--surface);
   }
-  header .brand {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  header .brand-icon {
-    width: 32px; height: 32px;
-    background: var(--accent-dim);
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 16px;
-  }
-  header h1 {
-    font-size: 15px;
-    font-weight: 600;
-    background: linear-gradient(135deg, var(--accent), #a78bfa);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
-  .status-bar {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    font-size: 12px;
-    color: var(--text-dim);
-  }
-  .status-dot {
-    width: 7px; height: 7px;
-    border-radius: 50%;
-    background: var(--red);
-    transition: all 0.3s;
-  }
-  .status-dot.connected {
-    background: var(--green);
-    box-shadow: 0 0 10px rgba(52, 211, 153, 0.5);
-  }
-  .stats {
-    display: flex;
-    gap: 12px;
-    color: var(--text-muted);
-  }
+  header .brand { display: flex; align-items: center; gap: 10px; }
+  header .brand-icon { width: 32px; height: 32px; background: var(--accent-dim); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+  header h1 { font-size: 15px; font-weight: 600; background: linear-gradient(135deg, var(--accent), #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .status-bar { display: flex; align-items: center; gap: 14px; font-size: 12px; color: var(--text-dim); }
+  .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--red); transition: all 0.3s; }
+  .status-dot.connected { background: var(--green); box-shadow: 0 0 10px rgba(52, 211, 153, 0.5); }
+  .stats { display: flex; gap: 12px; color: var(--text-muted); }
   .stats span { display: flex; align-items: center; gap: 3px; }
   .stats strong { color: var(--text-dim); font-weight: 500; }
 
-  /* ──── Main ──── */
-  main {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    max-width: 780px;
-    margin: 0 auto;
-    width: 100%;
-    padding: 0 16px 16px;
-  }
-
-  /* ──── Subtitle Area ──── */
-  .subtitle-area {
-    flex: 1;
-    overflow-y: auto;
-    padding: 12px 0;
-    scroll-behavior: smooth;
-  }
+  main { flex: 1; display: flex; flex-direction: column; max-width: 780px; margin: 0 auto; width: 100%; padding: 0 16px 16px; }
+  .subtitle-area { flex: 1; overflow-y: auto; padding: 12px 0; scroll-behavior: smooth; }
   .subtitle-area::-webkit-scrollbar { width: 4px; }
   .subtitle-area::-webkit-scrollbar-track { background: transparent; }
   .subtitle-area::-webkit-scrollbar-thumb { background: var(--surface2); border-radius: 2px; }
 
-  /* ──── Entry Card ──── */
-  .entry {
-    padding: 14px 18px;
-    margin-bottom: 8px;
-    background: var(--card);
-    border-radius: var(--radius);
-    border: 1px solid rgba(255,255,255,0.04);
-    border-left: 3px solid rgba(124, 92, 252, 0.5);
-    position: relative;
-  }
-  .entry:last-child {
-    margin-bottom: 0;
-  }
-  .entry.corrected {
-    border-left-color: var(--yellow);
-    border-color: rgba(251, 191, 36, 0.15);
-  }
+  .entry { padding: 14px 18px; margin-bottom: 8px; background: var(--card); border-radius: var(--radius); border: 1px solid rgba(255,255,255,0.04); border-left: 3px solid rgba(124, 92, 252, 0.5); }
+  .entry:last-child { margin-bottom: 0; }
+  .entry.corrected { border-left-color: var(--yellow); border-color: rgba(251, 191, 36, 0.15); }
+  .entry .source { font-size: 12.5px; color: var(--text-muted); margin-bottom: 5px; line-height: 1.5; }
+  .entry .translation { font-size: 16px; font-weight: 500; color: var(--text); line-height: 1.6; }
+  .entry .meta { display: flex; gap: 8px; margin-top: 8px; font-size: 10.5px; color: var(--text-muted); align-items: center; }
+  .correction-error { display: inline-block; background: rgba(248, 113, 113, 0.15); color: var(--red); font-size: 10px; padding: 1px 7px; border-radius: 4px; font-weight: 500; margin-left: 6px; vertical-align: middle; }
+  .correction-badge { display: inline-block; background: rgba(251, 191, 36, 0.15); color: var(--yellow); font-size: 10px; padding: 1px 7px; border-radius: 4px; font-weight: 500; }
+  .correction-new { margin-top: 8px; padding: 8px 10px; background: rgba(52, 211, 153, 0.06); border-radius: 6px; border: 1px solid rgba(52, 211, 153, 0.12); font-size: 15px; font-weight: 500; color: var(--green); line-height: 1.5; }
+  .correction-new::before { content: '\270E '; font-size: 12px; color: var(--text-muted); font-weight: 400; }
 
-  .entry .source {
-    font-size: 12.5px;
-    color: var(--text-muted);
-    margin-bottom: 5px;
-    line-height: 1.5;
-    letter-spacing: 0.01em;
-  }
-  .entry .translation {
-    font-size: 16px;
-    font-weight: 500;
-    color: var(--text);
-    line-height: 1.6;
-  }
-  .entry .meta {
-    display: flex;
-    gap: 8px;
-    margin-top: 8px;
-    font-size: 10.5px;
-    color: var(--text-muted);
-    align-items: center;
-  }
+  .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; min-height: 200px; text-align: center; color: var(--text-muted); }
+  .empty-state .icon { font-size: 40px; margin-bottom: 14px; opacity: 0.4; }
+  .empty-state h2 { font-size: 16px; font-weight: 500; margin-bottom: 6px; color: var(--text-dim); }
+  .empty-state p { font-size: 13px; color: var(--text-muted); }
 
-  /* ──── Correction Tags ──── */
-  .correction-error {
-    display: inline-block;
-    background: rgba(248, 113, 113, 0.15);
-    color: var(--red);
-    font-size: 10px;
-    padding: 1px 7px;
-    border-radius: 4px;
-    font-weight: 500;
-    margin-left: 6px;
-    vertical-align: middle;
-  }
-  .correction-badge {
-    display: inline-block;
-    background: rgba(251, 191, 36, 0.15);
-    color: var(--yellow);
-    font-size: 10px;
-    padding: 1px 7px;
-    border-radius: 4px;
-    font-weight: 500;
-  }
-  .correction-new {
-    margin-top: 8px;
-    padding: 8px 10px;
-    background: rgba(52, 211, 153, 0.06);
-    border-radius: 6px;
-    border: 1px solid rgba(52, 211, 153, 0.12);
-    font-size: 15px;
-    font-weight: 500;
-    color: var(--green);
-    line-height: 1.5;
-  }
-  .correction-new::before {
-    content: '✎ ';
-    font-size: 12px;
-    color: var(--text-muted);
-    font-weight: 400;
-  }
-
-  /* ──── Empty State ──── */
-  .empty-state {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    min-height: 200px;
-    text-align: center;
-    color: var(--text-muted);
-  }
-  .empty-state .icon {
-    font-size: 40px;
-    margin-bottom: 14px;
-    opacity: 0.4;
-  }
-  .empty-state h2 {
-    font-size: 16px;
-    font-weight: 500;
-    margin-bottom: 6px;
-    color: var(--text-dim);
-  }
-  .empty-state p {
-    font-size: 13px;
-    color: var(--text-muted);
-  }
-
-  /* ──── Animations ──── */
-  @keyframes slideIn {
-    from { opacity: 0; transform: translateY(6px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
+  @keyframes slideIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
   .entry { animation: slideIn 0.25s ease forwards; }
-  @keyframes correctGlow {
-    0% { border-left-color: var(--yellow); }
-    50% { box-shadow: inset 0 0 20px rgba(251, 191, 36, 0.04); }
-    100% { border-left-color: var(--yellow); }
-  }
-  .entry.corrected { animation: correctGlow 0.6s ease; }
+  .entry.corrected { border-left-color: var(--yellow); }
 
-  /* ──── Correction Status Badge in Header ──── */
-  #correctionStatus {
-    font-size: 10px;
-    padding: 2px 8px;
-    border-radius: 4px;
-    background: rgba(255,255,255,0.04);
+  /* ──── Mic Button ──── */
+  .mic-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 14px; border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: transparent; color: var(--text-dim);
+    font-size: 12px; cursor: pointer;
+    transition: all 0.2s;
   }
+  .mic-btn:hover { border-color: var(--accent); }
+  .mic-btn.active { background: rgba(52, 211, 153, 0.12); border-color: var(--green); color: var(--green); }
+  .mic-btn .dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+  .mic-btn.active .dot { animation: blink 1s infinite; }
+  @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.2; } }
+
+  #correctionStatus { font-size: 10px; padding: 2px 8px; border-radius: 4px; background: rgba(255,255,255,0.04); }
 </style>
 </head>
 <body>
@@ -243,6 +99,10 @@
     <h1>AI 同声传译</h1>
   </div>
   <div class="status-bar">
+    <button class="mic-btn" id="micBtn" onclick="toggleMic()">
+      <span class="dot"></span>
+      <span id="micBtnText">启动麦克风</span>
+    </button>
     <span class="status-dot" id="statusDot"></span>
     <span id="statusText">未连接</span>
     <span class="stats">
@@ -258,7 +118,7 @@
     <div class="empty-state" id="emptyState">
       <div class="icon">🎧</div>
       <h2>等待音频输入</h2>
-      <p>连接后将实时显示 AI 同声传译结果</p>
+      <p>点击「启动麦克风」按钮，授权后开始实时翻译</p>
     </div>
   </div>
 </main>
@@ -272,16 +132,24 @@
   const sentCount = document.getElementById('sentCount');
   const corrCount = document.getElementById('corrCount');
   const correctionStatusEl = document.getElementById('correctionStatus');
+  const micBtn = document.getElementById('micBtn');
+  const micBtnText = document.getElementById('micBtnText');
 
-  let sentTotal = 0;
-  let corrTotal = 0;
+  let sentTotal = 0, corrTotal = 0;
   const entryMap = new Map();
+  let ws = null;
+
+  // ──── 音频采集状态 ────────────────────────────────
+  let audioContext = null;
+  let micStream = null;
+  let micActive = false;
 
   // ──── WebSocket ────────────────────────────────────
   const wsUrl = (location.protocol === 'https:' ? 'wss:' : 'ws:') + '//' + location.hostname + ':8765/ws';
 
   function connect() {
-    const ws = new WebSocket(wsUrl);
+    ws = new WebSocket(wsUrl);
+    ws.binaryType = 'arraybuffer';
 
     ws.onopen = () => {
       statusDot.classList.add('connected');
@@ -291,6 +159,7 @@
     ws.onclose = () => {
       statusDot.classList.remove('connected');
       statusText.textContent = '已断开';
+      stopMic();
       setTimeout(connect, 3000);
     };
 
@@ -301,14 +170,109 @@
     };
 
     ws.onmessage = (event) => {
-      try { handleMessage(JSON.parse(event.data)); }
-      catch (e) { console.error('parse error:', e); }
+      if (typeof event.data === 'string') {
+        try { handleMessage(JSON.parse(event.data)); }
+        catch (e) { console.error('parse error:', e); }
+      }
+      // binary = 服务器回声或确认，忽略
     };
 
     setInterval(() => {
-      if (ws.readyState === WebSocket.OPEN)
+      if (ws && ws.readyState === WebSocket.OPEN)
         ws.send(JSON.stringify({ type: 'ping' }));
     }, 30000);
+  }
+
+  // ──── 麦克风控制 ──────────────────────────────────
+
+  async function toggleMic() {
+    if (micActive) { stopMic(); return; }
+    await startMic();
+  }
+
+  async function startMic() {
+    if (!ws || ws.readyState !== WebSocket.OPEN) {
+      alert('请等待 WebSocket 连接后再启动麦克风');
+      return;
+    }
+
+    try {
+      // 请求 16kHz 单声道音频（浏览器支持则用，不支持就回退默认）
+      micStream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          channelCount: 1,
+          sampleRate: { ideal: 16000 },
+          echoCancellation: true,
+          noiseSuppression: true,
+        }
+      });
+    } catch (e) {
+      alert('无法访问麦克风: ' + e.message);
+      return;
+    }
+
+    // 用 MediaRecorder 采集音频块直接发送
+    // 主流浏览器默认输出 Opus 编码的 WebM，但我们需要 PCM 数据
+    // 所以用 AudioContext 手动采集 Float32 → Int16
+
+    try {
+      audioContext = new (window.AudioContext || window.webkitAudioContext)({
+        sampleRate: 16000  // 请求 16kHz，支持的话直接到位
+      });
+    } catch(e) {
+      audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    }
+
+    const source = audioContext.createMediaStreamSource(micStream);
+    const SAMPLE_RATE = audioContext.sampleRate;
+    // 每帧 20ms 的采样数
+    var FRAME_SIZE = Math.round(SAMPLE_RATE * 0.02); // 16kHz=320, 48kHz=960
+
+    // 用 ScriptProcessor 采集原始 PCM
+    var processor = audioContext.createScriptProcessor(4096, 1, 1);
+    source.connect(processor);
+    processor.connect(audioContext.destination);
+
+    // 累积缓冲
+    var sampleBuf = [];
+
+    processor.onaudioprocess = function(e) {
+      if (!micActive) return;
+      var input = e.inputBuffer.getChannelData(0); // Float32 [-1, 1]
+
+      for (var i = 0; i < input.length; i++) {
+        // Float32 → Int16，放大音量确保足够大
+        var s = Math.max(-1, Math.min(1, input[i]));
+        sampleBuf.push(Math.round(s * 32767));
+      }
+
+      // 凑够一帧就发送
+      while (sampleBuf.length >= FRAME_SIZE) {
+        var frame = sampleBuf.splice(0, FRAME_SIZE);
+        var pcm = new Int16Array(frame);
+        if (ws && ws.readyState === WebSocket.OPEN) {
+          ws.send(pcm.buffer);
+        }
+      }
+    };
+
+    micActive = true;
+    micBtn.classList.add('active');
+    micBtnText.textContent = '停止麦克风';
+    // 存储 processor 引用以便停止
+    audioContext._processor = processor;
+  }
+
+  function stopMic() {
+    micActive = false;
+    if (micStream) { micStream.getTracks().forEach(function(t) { t.stop(); }); micStream = null; }
+    if (audioContext) {
+      if (audioContext._processor) { audioContext._processor.disconnect(); }
+      audioContext.close().catch(function(){});
+      audioContext = null;
+    }
+    micBtn.classList.remove('active');
+    micBtnText.textContent = '启动麦克风';
   }
 
   // ──── 消息处理 ──────────────────────────────────────
@@ -324,15 +288,12 @@
 
   function esc(t) { if (!t) return ''; var d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
 
-  // ──── ASR ──────────────────────────────────────────
-
   function showASR(data) {
     emptyState.style.display = 'none';
     var el = entryMap.get(data.seq_id);
     if (el) {
       el.querySelector('.source').textContent = data.text;
-      if (el.dataset.status === 'asr_only')
-        el.querySelector('.translation').textContent = data.text;
+      if (el.dataset.status === 'asr_only') el.querySelector('.translation').textContent = data.text;
       return;
     }
     var div = document.createElement('div');
@@ -345,8 +306,6 @@
     sentTotal++;
     sentCount.textContent = sentTotal;
   }
-
-  // ──── 翻译 ──────────────────────────────────────────
 
   function addTranslation(data) {
     emptyState.style.display = 'none';
@@ -377,8 +336,6 @@
     sentCount.textContent = sentTotal;
   }
 
-  // ──── 修正 ──────────────────────────────────────────
-
   function applyCorrection(data) {
     var el = entryMap.get(data.seq_id);
     if (!el) {
@@ -389,8 +346,7 @@
       div.innerHTML = '<div class="source">' + esc(data.original_source || '') + '</div><div class="translation">' + esc(data.original_translation) + ' <span class="correction-error">需修正</span></div><div class="correction-new">' + esc(data.corrected_translation) + '</div><div class="meta"><span>#' + String(data.seq_id).padStart(4,'0') + '</span><span class="correction-badge">修正</span></div>';
       subtitleArea.appendChild(div);
       entryMap.set(data.seq_id, div);
-      sentTotal++;
-      sentCount.textContent = sentTotal;
+      sentTotal++; sentCount.textContent = sentTotal;
     } else {
       if (el.querySelector('.correction-new')) return;
       el.classList.add('corrected');
@@ -399,44 +355,27 @@
       if (src && !src.textContent.trim() && data.original_source) src.textContent = data.original_source;
       var tr = el.querySelector('.translation');
       if (tr && !tr.querySelector('.correction-error')) {
-        var b = document.createElement('span');
-        b.className = 'correction-error';
-        b.textContent = '需修正';
+        var b = document.createElement('span'); b.className = 'correction-error'; b.textContent = '需修正';
         tr.appendChild(b);
       }
       if (!el.querySelector('.correction-new')) {
-        var n = document.createElement('div');
-        n.className = 'correction-new';
-        n.textContent = data.corrected_translation || '';
-        el.appendChild(n);
+        var n = document.createElement('div'); n.className = 'correction-new';
+        n.textContent = data.corrected_translation || ''; el.appendChild(n);
       }
       var meta = el.querySelector('.meta');
       if (meta && !meta.querySelector('.correction-badge')) {
-        var b = document.createElement('span');
-        b.className = 'correction-badge';
-        b.textContent = '修正';
+        var b = document.createElement('span'); b.className = 'correction-badge'; b.textContent = '修正';
         meta.prepend(b);
       }
     }
-    corrTotal++;
-    corrCount.textContent = corrTotal;
+    corrTotal++; corrCount.textContent = corrTotal;
   }
-
-  // ──── 修正状态 ──────────────────────────────────────
 
   function showCorrectionStatus(data) {
     correctionStatusEl.style.display = '';
-    if (data.status === 'checking') {
-      correctionStatusEl.textContent = '⏳ 审查';
-      correctionStatusEl.style.color = 'var(--yellow)';
-    } else if (data.status === 'corrected') {
-      correctionStatusEl.textContent = '🔧 已修正';
-      correctionStatusEl.style.color = 'var(--green)';
-      setTimeout(function(){ correctionStatusEl.style.display = 'none'; }, 3000);
-    } else {
-      correctionStatusEl.textContent = '';
-      correctionStatusEl.style.display = 'none';
-    }
+    if (data.status === 'checking') { correctionStatusEl.textContent = '⏳ 审查'; correctionStatusEl.style.color = 'var(--yellow)'; }
+    else if (data.status === 'corrected') { correctionStatusEl.textContent = '🔧 已修正'; correctionStatusEl.style.color = 'var(--green)'; setTimeout(function(){ correctionStatusEl.style.display = 'none'; }, 3000); }
+    else { correctionStatusEl.textContent = ''; correctionStatusEl.style.display = 'none'; }
   }
 
   // ──── 启动 ──────────────────────────────────────

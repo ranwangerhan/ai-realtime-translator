@@ -113,6 +113,9 @@ class ConnectionManager:
 # 全局单例
 manager = ConnectionManager()
 
+# 浏览器麦克风音频输入队列（由 main.py 设置）
+_audio_capture_queue: asyncio.Queue[bytes] | None = None
+
 
 # ──── FastAPI 应用 ──────────────────────────────────
 
@@ -148,18 +151,47 @@ async def health():
 
 @app.websocket("/ws")
 async def websocket_endpoint(ws: WebSocket):
-    """WebSocket 端点。"""
+    """WebSocket 端点。
+
+    支持两种消息类型：
+    - 文本 (JSON): ping/pong 心跳
+    - 二进制: 浏览器麦克风 PCM 音频数据 (16kHz 16-bit mono)
+    """
     client_id = await manager.connect(ws)
 
     try:
         while True:
-            data = await ws.receive_text()
-            try:
-                msg = json.loads(data)
-                if msg.get("type") == "ping":
-                    await ws.send_text(json.dumps({"type": "pong"}))
-            except json.JSONDecodeError:
-                pass
+            raw = await ws.receive()
+            if raw["type"] == "websocket.disconnect":
+                break
+
+            if "text" in raw:
+                # 文本消息 = 心跳/控制
+                try:
+                    msg = json.loads(raw["text"])
+                    if msg.get("type") == "ping":
+                        await ws.send_text(json.dumps({"type": "pong"}))
+                except json.JSONDecodeError:
+                    pass
+            elif "bytes" in raw:
+                # 二进制消息 = 浏览器麦克风 PCM 音频 (Int16)
+                # 浏览器可能发 16kHz / 48kHz，尝试降采样到 16kHz
+                pcm_data = raw["bytes"]
+                if _audio_capture_queue is not None and not _audio_capture_queue.full():
+                    # 简单的帧长检测降采样：
+                    # 如果一帧超过 400 字节 (200 samples @16kHz)，说明是 >16kHz
+                    frame_samples = len(pcm_data) // 2
+                    if frame_samples > 400:
+                        # 48kHz → 16kHz: 每3取1; 44.1kHz → 16kHz: 简单线性
+                        ratio = frame_samples // 320  # 320 = 20ms @16kHz
+                        if ratio >= 2:
+                            # 降采样：每隔 ratio 取一个
+                            import numpy as np
+                            samples = np.frombuffer(pcm_data, dtype=np.int16)
+                            decimated = samples[::ratio]
+                            pcm_data = decimated[:320].tobytes()  # 截取 20ms
+                    if len(pcm_data) >= 640:  # 至少 20ms
+                        await _audio_capture_queue.put(pcm_data)
     except WebSocketDisconnect:
         pass
     finally:
@@ -171,9 +203,10 @@ async def websocket_endpoint(ws: WebSocket):
 class WebSocketServer:
     """异步推送任务：从队列读取事件并广播到 WebSocket。
 
-    同时监听两个队列：
+    同时监听队列：
     - input_queue: TransEvent / CorrectionEvent（翻译+修正结果）
     - asr_queue:   ASREvent（原始 ASR 文本，先于翻译显示）
+    - capture_queue: 接收浏览器麦克风音频，注入 VAD 管道
     """
 
     def __init__(
@@ -181,11 +214,19 @@ class WebSocketServer:
         input_queue: asyncio.Queue[TransEvent | CorrectionEvent],
         asr_queue: asyncio.Queue | None = None,
         correction_status_queue: asyncio.Queue | None = None,
+        capture_queue: asyncio.Queue[bytes] | None = None,
     ) -> None:
         self._input_queue = input_queue
         self._asr_queue = asr_queue
         self._correction_status_queue = correction_status_queue
         self._running: bool = False
+
+        # 将音频捕获队列注册到全局，让 WebSocket 端点能访问
+        global _audio_capture_queue
+        if capture_queue is not None:
+            _audio_capture_queue = capture_queue
+            from loguru import logger
+            logger.info("浏览器麦克风模式已启用 — 音频将来自 WebSocket")
 
     async def run(self) -> None:
         """推送主循环。"""

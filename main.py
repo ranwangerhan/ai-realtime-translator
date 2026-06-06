@@ -35,8 +35,9 @@ from core.models.schemas import ASREvent, TransEvent, CorrectionEvent
 class Pipeline:
     """全链路管道管理器。"""
 
-    def __init__(self, use_mock: bool = False, enable_ws: bool = True):
+    def __init__(self, use_mock: bool = False, browser_mic: bool = False, enable_ws: bool = True):
         self._use_mock = use_mock
+        self._browser_mic = browser_mic
         self._enable_ws = enable_ws
 
         # ── 队列 ───────────────────────────────
@@ -50,11 +51,12 @@ class Pipeline:
         self.correction_status_queue: asyncio.Queue = asyncio.Queue()
 
         # ── 组件 ───────────────────────────────
-        if not use_mock:
+        # 音频来源：browser_mic → WebSocket 接入；mock → 模拟信号；否则 → 本机声卡
+        if browser_mic or use_mock:
+            self.capture = None
+        else:
             self.capture = AudioCapture()
             self.capture.output_queue = self.capture_queue
-        else:
-            self.capture = None
 
         self.vad = VADProcessor(input_queue=self.capture_queue, output_queue=self.vad_queue)
 
@@ -89,6 +91,9 @@ class Pipeline:
                      settings.SAMPLE_RATE, settings.CHANNELS, settings.FRAME_DURATION_MS)
         logger.info("  VAD     : {} | 静音阈值 {}ms",
                      self.vad.backend_name, settings.SILENCE_DURATION_MS)
+        logger.info("  音频源  : {}",
+                     "浏览器麦克风" if self._browser_mic else
+                     "模拟音频" if self._use_mock else "本机声卡")
         logger.info("  ASR     : {} (size={}, device={})",
                      "Mock" if self._use_mock else "faster-whisper",
                      settings.ASR_MODEL_SIZE, settings.ASR_DEVICE)
@@ -116,13 +121,17 @@ class Pipeline:
                 # 无 WebSocket 时用控制台输出
                 tg.create_task(self._consumer(), name="Consumer")
 
-            # 3. 给下游任务一点时间完成初始化再启动音频采集
+            # 3. 给下游任务一点时间完成初始化再启动音频源
             await asyncio.sleep(0.5)
             if self.capture is not None:
+                # 本机声卡采集
                 await self.capture.start()
-            else:
+            elif self._use_mock:
                 # Mock 模式：启动模拟音频源
                 tg.create_task(self._mock_audio_source(), name="MockAudio")
+            else:
+                # 浏览器麦克风模式：音频由 WebSocket 注入，无需启动音频源
+                logger.info("浏览器麦克风模式 — 等待前端连接发送音频...")
 
     async def stop(self) -> None:
         """停止所有组件。"""
@@ -235,6 +244,7 @@ class Pipeline:
             input_queue=self.output_queue,
             asr_queue=self.asr_ws_queue,
             correction_status_queue=self.correction_status_queue,
+            capture_queue=self.capture_queue if self._browser_mic else None,
         )
 
         self._uvicorn_thread = threading.Thread(
@@ -339,7 +349,9 @@ def main() -> NoReturn:
     import argparse
 
     parser = argparse.ArgumentParser(description="AI 同声传译助手")
-    parser.add_argument("--mock", action="store_true", help="使用 MockASR（调试用）")
+    parser.add_argument("--mock", action="store_true", help="使用 MockASR + 模拟音频（调试用）")
+    parser.add_argument("--browser-mic", action="store_true", help="浏览器麦克风模式（默认，音频来自 Web 前端）")
+    parser.add_argument("--local-mic", action="store_true", help="本机声卡模式（服务器有物理麦克风时用）")
     parser.add_argument("--no-ws", action="store_true", help="不启动 WebSocket 服务")
     parser.add_argument("--list-devices", action="store_true", help="列出音频设备")
     args = parser.parse_args()
@@ -353,7 +365,10 @@ def main() -> NoReturn:
     if sys.platform == "win32":
         asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
-    pipeline = Pipeline(use_mock=args.mock, enable_ws=not args.no_ws)
+    # 模式判断
+    use_mock = args.mock
+    use_browser_mic = args.browser_mic or (not args.local_mic and not args.mock)
+    pipeline = Pipeline(use_mock=use_mock, browser_mic=use_browser_mic, enable_ws=not args.no_ws)
 
     async def _amain() -> None:
         loop = asyncio.get_running_loop()
