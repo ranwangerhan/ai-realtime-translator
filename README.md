@@ -13,7 +13,7 @@
 - **多路并行** — 3 路翻译并行处理，大幅降低等待延迟
 - **无需服务器麦克风** — 云服务器也可使用，音频采集完全在浏览器端完成
 ## demo演示视频
-
+https://www.bilibili.com/video/BV1QaEb6UEsV?vd_source=26d20425238347e625f97a401ca1c3cb
 
 
 ## 快速开始
